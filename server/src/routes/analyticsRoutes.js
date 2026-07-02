@@ -1,14 +1,16 @@
 import { Router } from "express";
 import { abc, categoryBreakdown, dashboard, recommendationList, revenueTrend, topProducts } from "../controllers/analyticsController.js";
-import { protect } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
+import { protect, requireBillingLevel } from "../middleware/auth.js";
 
 const router = Router();
 router.use(protect);
-router.get("/dashboard", dashboard);
-router.get("/top-products", topProducts);
-router.get("/revenue-trend", revenueTrend);
-router.get("/abc-analysis", abc);
-router.get("/category-breakdown", categoryBreakdown);
-router.get("/recommendations", recommendationList);
+router.get("/dashboard", asyncHandler(dashboard));
+router.use(["/top-products", "/revenue-trend", "/abc-analysis", "/category-breakdown"], requireBillingLevel(["basic", "pro"]));
+router.use("/recommendations", requireBillingLevel("pro"));
+router.get("/top-products", asyncHandler(topProducts));
+router.get("/revenue-trend", asyncHandler(revenueTrend));
+router.get("/abc-analysis", asyncHandler(abc));
+router.get("/category-breakdown", asyncHandler(categoryBreakdown));
+router.get("/recommendations", asyncHandler(recommendationList));
 export default router;
-

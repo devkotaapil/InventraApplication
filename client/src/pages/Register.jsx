@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Store } from "lucide-react";
+import { Eye, EyeOff, Store } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const counterImage =
@@ -11,6 +11,7 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ name: "", email: "", shopName: "", phone: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
@@ -37,14 +38,31 @@ export default function Register() {
             </div>
             <div>
               <h1 className="text-3xl font-black">Sign up</h1>
-              <p className="text-sm text-navy/60">Start managing your store today</p>
+              <p className="text-sm text-navy/60">Create your account, then choose a plan</p>
             </div>
           </div>
           <input className="input" placeholder="Your name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
           <input className="input" placeholder="Shop name" value={form.shopName} onChange={(e) => setForm({ ...form, shopName: e.target.value })} />
           <input className="input" placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           <input className="input" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
-          <input className="input" placeholder="Password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <label className="relative block">
+            <input
+              className="input pr-12"
+              placeholder="Password"
+              type={showPassword ? "text" : "password"}
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+            />
+            <button
+              className="absolute inset-y-0 right-3 inline-flex items-center text-navy/50 hover:text-navy"
+              type="button"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() => setShowPassword((value) => !value)}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </label>
           <button className="btn-primary">Create account</button>
           <Link className="text-sm font-semibold underline" to="/login">Already have an account?</Link>
         </form>

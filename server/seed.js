@@ -1,18 +1,30 @@
 import dotenv from "dotenv";
 import { connectDB } from "./src/config/db.js";
+import AuditLog from "./src/models/AuditLog.js";
 import Inventory from "./src/models/Inventory.js";
+import Payment from "./src/models/Payment.js";
 import Product from "./src/models/Product.js";
 import Sale from "./src/models/Sale.js";
 import StockMovement from "./src/models/StockMovement.js";
+import Subscription from "./src/models/Subscription.js";
 import User from "./src/models/User.js";
 import { generateInvoiceNumber } from "./src/utils/helpers.js";
 
 dotenv.config();
 await connectDB();
 
-await Promise.all([User.deleteMany({}), Product.deleteMany({}), Inventory.deleteMany({}), Sale.deleteMany({}), StockMovement.deleteMany({})]);
+await Promise.all([
+  User.deleteMany({}),
+  Product.deleteMany({}),
+  Inventory.deleteMany({}),
+  Sale.deleteMany({}),
+  StockMovement.deleteMany({}),
+  AuditLog.deleteMany({}),
+  Payment.deleteMany({}),
+  Subscription.deleteMany({})
+]);
 
-const admin = await User.create({ name: "Demo Retailer", email: "admin@inventra.com", password: "admin123", shopName: "Inventra Demo Store" });
+const admin = await User.create({ name: "Inventra Admin", email: "admin@inventra.com", password: "admin123", shopName: "Inventra Demo Store", isAdmin: true });
 
 const productSeeds = [
   ["Basmati Rice 5kg", "Grocery", "bag", 550, 650],
@@ -30,7 +42,7 @@ const productSeeds = [
 const products = [];
 for (const [name, category, unit, costPrice, sellingPrice] of productSeeds) {
   const prefix = category.slice(0, 3).toUpperCase();
-  const sku = `INV-${prefix}-${String(products.length + 1).padStart(4, "0")}`;
+  const sku = `INV-${prefix}-${String(admin._id).slice(-4).toUpperCase()}-${String(products.length + 1).padStart(4, "0")}`;
   const product = await Product.create({ owner: admin._id, name, category, unit, costPrice, sellingPrice, sku, description: `${name} retail item` });
   products.push(product);
   await Inventory.create({

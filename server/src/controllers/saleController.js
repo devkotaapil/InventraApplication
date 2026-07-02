@@ -1,4 +1,5 @@
 import { body } from "express-validator";
+import mongoose from "mongoose";
 import Inventory from "../models/Inventory.js";
 import Product from "../models/Product.js";
 import Sale from "../models/Sale.js";
@@ -12,36 +13,92 @@ export const saleRules = [
   body("paymentMethod").optional().isIn(["cash", "card", "digital"])
 ];
 
+function httpError(message, statusCode = 400) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
 export async function createSale(req, res) {
-  const saleItems = [];
-  let total = 0;
+  const requestedQuantities = new Map();
+  const session = await mongoose.startSession();
 
   for (const item of req.body.items) {
-    const product = await Product.findOne({ _id: item.product, owner: req.user._id });
-    const inventory = await Inventory.findOne({ owner: req.user._id, product: item.product });
-    if (!product || !product.isActive || !inventory) return fail(res, "Product not found", 404);
-    if (inventory.currentStock < item.quantity) return fail(res, `${product.name} does not have enough stock`);
-    const subtotal = product.sellingPrice * item.quantity;
-    total += subtotal;
-    saleItems.push({ product: product._id, quantity: item.quantity, unitPrice: product.sellingPrice, subtotal });
+    requestedQuantities.set(item.product, (requestedQuantities.get(item.product) || 0) + Number(item.quantity));
   }
 
-  const discount = Number(req.body.discount || 0);
-  const sale = await Sale.create({
-    owner: req.user._id,
-    invoiceNumber: await generateInvoiceNumber(req.user._id),
-    items: saleItems,
-    totalAmount: total - discount,
-    discount,
-    paymentMethod: req.body.paymentMethod || "cash"
-  });
+  try {
+    let sale;
 
-  for (const item of saleItems) {
-    await Inventory.updateOne({ owner: req.user._id, product: item.product }, { $inc: { currentStock: -item.quantity } });
-    await StockMovement.create({ owner: req.user._id, product: item.product, movementType: "sale", quantity: -item.quantity, reason: "Sale", reference: sale._id });
+    await session.withTransaction(async () => {
+      const saleItems = [];
+      let total = 0;
+
+      for (const [productId, quantity] of requestedQuantities.entries()) {
+        const product = await Product.findOne({ _id: productId, owner: req.user._id }).session(session);
+        if (!product || !product.isActive) throw httpError("Product not found", 404);
+
+        const inventory = await Inventory.findOneAndUpdate(
+          {
+            owner: req.user._id,
+            product: productId,
+            currentStock: { $gte: quantity }
+          },
+          { $inc: { currentStock: -quantity } },
+          { new: true, session }
+        );
+
+        if (!inventory) {
+          throw httpError(`${product.name} does not have enough stock`, 409);
+        }
+
+        const subtotal = product.sellingPrice * quantity;
+        total += subtotal;
+        saleItems.push({ product: product._id, quantity, unitPrice: product.sellingPrice, subtotal });
+      }
+
+      const discount = Number(req.body.discount || 0);
+      [sale] = await Sale.create(
+        [
+          {
+            owner: req.user._id,
+            invoiceNumber: await generateInvoiceNumber(req.user._id),
+            items: saleItems,
+            totalAmount: total - discount,
+            discount,
+            paymentMethod: req.body.paymentMethod || "cash"
+          }
+        ],
+        { session }
+      );
+
+      await StockMovement.insertMany(
+        saleItems.map((item) => ({
+          owner: req.user._id,
+          product: item.product,
+          movementType: "sale",
+          quantity: -item.quantity,
+          reason: "Sale",
+          reference: sale._id
+        })),
+        { session }
+      );
+    });
+
+    ok(res, sale, "Sale recorded", 201);
+  } catch (error) {
+    if (error?.code === 11000) {
+      return fail(res, "Could not complete the sale. Please try again.", 409);
+    }
+
+    if (error?.statusCode) {
+      return fail(res, error.message, error.statusCode);
+    }
+
+    throw error;
+  } finally {
+    await session.endSession();
   }
-
-  ok(res, sale, "Sale recorded", 201);
 }
 
 export async function listSales(req, res) {

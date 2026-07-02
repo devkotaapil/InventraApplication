@@ -2,8 +2,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import billingRoutes from "./routes/billingRoutes.js";
 import inventoryRoutes from "./routes/inventoryRoutes.js";
+import { securityHeaders } from "./middleware/security.js";
 import movementRoutes from "./routes/movementRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import saleRoutes from "./routes/saleRoutes.js";
@@ -19,12 +22,15 @@ const allowedOrigins = [
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
+app.use(securityHeaders);
 
 app.get("/health", (_req, res) => {
   res.json({ success: true, data: { service: "inventra-api" }, message: "Server is healthy" });
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/billing", billingRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/inventory", inventoryRoutes);
 app.use("/api/sales", saleRoutes);
@@ -41,4 +47,3 @@ app.use((err, _req, res, _next) => {
 });
 
 export default app;
-

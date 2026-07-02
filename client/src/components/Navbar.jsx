@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
-import { LogOut, Settings, UserRound } from "lucide-react";
+import { CreditCard, LogOut, Settings, UserRound } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Modal from "./Modal";
 
@@ -34,6 +35,11 @@ export default function Navbar() {
             <p className="text-sm text-navy/60">{user?.email}</p>
             {user?.shopName && <p className="mt-1 text-sm text-navy/70">{user.shopName}</p>}
             <div className="mt-4 grid gap-2">
+              {!user?.isAdmin && (
+                <Link className="btn-secondary justify-start" to="/billing" onClick={() => setOpen(false)}>
+                  <CreditCard size={16} /> Billing
+                </Link>
+              )}
               <button className="btn-secondary justify-start" onClick={() => setEditing(true)}>
                 <Settings size={16} /> Change info
               </button>

@@ -1,11 +1,30 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { BarChart3, Boxes, CheckCircle2, PackageCheck, ReceiptText, ShieldCheck, Store, TrendingUp } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const heroImage = "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=1400&q=80";
 const counterImage = "https://images.unsplash.com/photo-1556745757-8d76bdb6984b?auto=format&fit=crop&w=1100&q=80";
 
 export default function Landing() {
+  const { authLoading, isAuthenticated, logout, user } = useAuth();
+  const navigate = useNavigate();
+  const prompted = useRef(false);
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated || prompted.current) return;
+
+    prompted.current = true;
+    const shouldLogout = window.confirm("You are already signed in. Do you want to log out and return to the home page?");
+
+    if (shouldLogout) {
+      logout();
+      return;
+    }
+
+    navigate(user?.isAdmin ? "/admin" : "/dashboard", { replace: true });
+  }, [authLoading, isAuthenticated, logout, navigate, user]);
+
   return (
     <main className="min-h-screen bg-cream text-navy">
       <header className="sticky top-0 z-40 border-b border-navy/10 bg-cream/90 backdrop-blur">
@@ -23,6 +42,7 @@ export default function Landing() {
             <a href="#features">Features</a>
             <a href="#workflow">Workflow</a>
             <a href="#analytics">Analytics</a>
+            <Link to="/pricing">Pricing</Link>
           </nav>
           <div className="flex items-center gap-2">
             <Link className="btn-secondary" to="/login">Login</Link>
@@ -41,6 +61,7 @@ export default function Landing() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link className="btn-primary" to="/register">Start free</Link>
+              <Link className="btn-secondary" to="/pricing">View pricing</Link>
               <Link className="btn-secondary" to="/login">Login to workspace</Link>
             </div>
             <div className="mt-10 grid gap-3 sm:grid-cols-2">
