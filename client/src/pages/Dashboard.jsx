@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Boxes, CircleDollarSign, PackageMinus, ReceiptText } from "lucide-react";
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarChart3, Boxes, Lightbulb, PackageMinus, ReceiptText } from "lucide-react";
 import api from "../api/api";
 import KPICard from "../components/KPICard";
-import RecommendationList from "../components/RecommendationList";
 
 export default function Dashboard() {
   const [stats, setStats] = useState({});
-  const [trend, setTrend] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
 
   useEffect(() => {
     api.get("/analytics/dashboard").then((res) => setStats(res.data.data));
-    api.get("/analytics/revenue-trend").then((res) => setTrend(res.data.data));
-    api.get("/analytics/recommendations").then((res) => setRecommendations(res.data.data));
   }, []);
 
   return (
@@ -22,35 +16,42 @@ export default function Dashboard() {
       <section className="grid gap-4 md:grid-cols-4">
         <Link to="/products"><KPICard icon={Boxes} label="Products" value={stats.products || 0} /></Link>
         <Link to="/sales"><KPICard icon={ReceiptText} label="Sales Today" value={stats.todaySales || 0} /></Link>
-        <Link to="/analytics"><KPICard icon={CircleDollarSign} label="Revenue Today" value={`Rs. ${stats.revenue || 0}`} /></Link>
+        <Link to="/sales"><KPICard icon={ReceiptText} label="Revenue Today" value={`Rs. ${stats.revenue || 0}`} /></Link>
         <Link to="/inventory"><KPICard icon={PackageMinus} label="Low Stock" value={stats.lowStock || 0} /></Link>
       </section>
-      <section className="card">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-bold">Revenue over time</h2>
-          <Link className="text-sm font-bold underline" to="/analytics">Open analytics</Link>
-        </div>
-        <div className="h-80">
-          <ResponsiveContainer>
-            <LineChart data={trend}>
-              <XAxis dataKey="_id" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="revenue" stroke="#1E2A5E" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
-      <section className="card">
-        <div className="mb-3 flex items-center justify-between">
-          <div>
-            <h2 className="font-bold">Quiet stock notes</h2>
-            <p className="text-sm text-navy/50">A few suggestions worth checking before the shelf gets thin.</p>
-          </div>
-          <Link className="text-sm font-bold underline" to="/recommendations">View all</Link>
-        </div>
-        <RecommendationList items={recommendations} subtle />
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <FeatureCard
+          icon={BarChart3}
+          title="Advanced analytics"
+          copy="Unlock revenue trends, top products, category breakdowns, and ABC analysis when you are ready to go deeper."
+          to="/billing"
+        />
+        <FeatureCard
+          icon={Lightbulb}
+          title="Smart recommendations"
+          copy="Upgrade to see low-stock priorities, inactive-product notes, and movement history for better restocking decisions."
+          to="/billing"
+        />
       </section>
     </div>
+  );
+}
+
+function FeatureCard({ icon: Icon, title, copy, to }) {
+  return (
+    <section className="card grid gap-3">
+      <div className="flex items-center gap-3">
+        <span className="grid h-11 w-11 place-items-center rounded-lg bg-navy text-white">
+          <Icon size={20} />
+        </span>
+        <div>
+          <p className="text-xs font-black uppercase text-navy/45">Premium</p>
+          <h2 className="font-black">{title}</h2>
+        </div>
+      </div>
+      <p className="text-sm leading-6 text-navy/65">{copy}</p>
+      <Link className="btn-primary w-fit" to={to}>View plans</Link>
+    </section>
   );
 }

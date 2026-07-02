@@ -57,18 +57,32 @@ export async function recommendations(owner) {
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const alerts = [];
 
+  function makeAlert(item, type, message) {
+    return {
+      type,
+      message,
+      productId: item.product._id,
+      productName: item.product.name,
+      currentStock: item.currentStock,
+      reorderPoint: item.reorderPoint,
+      reorderQuantity: item.reorderQuantity,
+      sellingPrice: item.product.sellingPrice,
+      stockValue: item.currentStock * item.product.sellingPrice
+    };
+  }
+
   for (const item of inventory) {
     if (!item.product) continue;
     const productId = String(item.product._id);
     const soldRecently = await Sale.exists({ owner, saleDate: { $gte: since }, "items.product": item.product._id });
 
-    if (item.currentStock === 0) alerts.push({ type: "urgent", message: `${item.product.name} is OUT OF STOCK.` });
-    if (item.currentStock <= item.reorderPoint) alerts.push({ type: "warning", message: `Reorder ${item.product.name}. Stock is critically low.` });
+    if (item.currentStock === 0) alerts.push(makeAlert(item, "urgent", `${item.product.name} is OUT OF STOCK.`));
+    if (item.currentStock <= item.reorderPoint) alerts.push(makeAlert(item, "warning", `Reorder ${item.product.name}. Stock is critically low.`));
     if (abcMap.get(productId) === "A" && item.currentStock <= item.reorderPoint) {
-      alerts.push({ type: "urgent", message: `${item.product.name} is a top seller with low stock. Reorder immediately.` });
+      alerts.push(makeAlert(item, "urgent", `${item.product.name} is a top seller with low stock. Reorder immediately.`));
     }
     if (!soldRecently && item.currentStock > item.reorderQuantity) {
-      alerts.push({ type: "info", message: `${item.product.name} has no sales in 30 days. Consider a discount or promotion.` });
+      alerts.push(makeAlert(item, "info", `${item.product.name} has no sales in 30 days. Consider a discount or promotion.`));
     }
   }
 

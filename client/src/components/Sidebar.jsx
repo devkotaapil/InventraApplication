@@ -1,16 +1,17 @@
 import React from "react";
-import { BarChart3, Boxes, ClipboardList, Home, Lightbulb, PackageCheck, ReceiptText, Shield, TrendingUp } from "lucide-react";
+import { BarChart3, Boxes, ClipboardList, CreditCard, Home, Lightbulb, PackageCheck, ReceiptText, Shield, TrendingUp } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const links = [
-  ["/dashboard", "Dashboard", Home],
-  ["/products", "Products", Boxes],
-  ["/inventory", "Inventory", PackageCheck],
-  ["/sales", "Sales", ReceiptText],
-  ["/analytics", "Analytics", BarChart3],
-  ["/recommendations", "Recommendations", Lightbulb],
-  ["/movements", "Movements", ClipboardList]
+  ["/dashboard", "Dashboard", Home, false],
+  ["/products", "Products", Boxes, false],
+  ["/inventory", "Inventory", PackageCheck, false],
+  ["/sales", "Sales", ReceiptText, false],
+  ["/analytics", "Analytics", BarChart3, "Basic"],
+  ["/recommendations", "Recommendations", Lightbulb, "Pro"],
+  ["/movements", "Movements", ClipboardList, "Pro"],
+  ["/billing", "Billing", CreditCard, false]
 ];
 
 export default function Sidebar() {
@@ -21,16 +22,19 @@ export default function Sidebar() {
     <aside className="bg-navy p-4 text-white lg:min-h-screen">
       <div className="mb-6 text-2xl font-black">Inventra</div>
       <nav className="flex gap-2 overflow-x-auto lg:grid">
-        {visibleLinks.map(([to, label, Icon]) => (
+        {visibleLinks.map(([to, label, Icon, level]) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `flex min-h-10 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-semibold ${isActive ? "bg-white text-navy" : "text-white/80 hover:bg-white/10"}`
+              `flex min-h-10 shrink-0 items-center justify-between gap-2 rounded-lg px-3 text-sm font-semibold ${isActive ? "bg-white text-navy" : "text-white/80 hover:bg-white/10"}`
             }
           >
-            <Icon size={18} />
-            {label}
+            <span className="flex items-center gap-2">
+              <Icon size={18} />
+              {label}
+            </span>
+            {level && <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase">{level}</span>}
           </NavLink>
         ))}
       </nav>

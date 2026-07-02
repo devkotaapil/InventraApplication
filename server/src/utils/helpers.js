@@ -15,18 +15,24 @@ export function pagination(req) {
   return { page, limit, skip: (page - 1) * limit };
 }
 
-export async function generateSku(category) {
+export function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function ownerCode(owner) {
+  return String(owner).slice(-4).toUpperCase();
+}
+
+export async function generateSku(owner, category) {
   const prefix = category.replace(/[^a-z0-9]/gi, "").slice(0, 3).toUpperCase() || "GEN";
-  const count = await Product.countDocuments({ category: new RegExp(`^${category}$`, "i") });
-  return `INV-${prefix}-${String(count + 1).padStart(4, "0")}`;
+  const count = await Product.countDocuments({ owner, category: new RegExp(`^${category}$`, "i") });
+  return `INV-${prefix}-${ownerCode(owner)}-${String(count + 1).padStart(4, "0")}`;
 }
 
 export async function generateInvoiceNumber(owner, date = new Date()) {
   const stamp = date.toISOString().slice(0, 10).replaceAll("-", "");
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  const count = await Sale.countDocuments({ owner, saleDate: { $gte: start, $lt: end } });
-  return `INV-${stamp}-${String(count + 1).padStart(4, "0")}`;
+  const time = date.toISOString().slice(11, 19).replaceAll(":", "");
+  const milli = String(date.getMilliseconds()).padStart(3, "0");
+  const random = String(Math.floor(Math.random() * 100)).padStart(2, "0");
+  return `INV-${stamp}-${ownerCode(owner)}-${time}${milli}${random}`;
 }
