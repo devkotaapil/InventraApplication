@@ -103,11 +103,11 @@ export default function Billing() {
 
       {verifying && <p className="card text-sm font-bold text-navy/70">Verifying Khalti payment...</p>}
 
-      <section className="card grid gap-2 text-sm text-navy/70">
+      {/* <section className="card grid gap-2 text-sm text-navy/70">
         <p className="font-black uppercase text-navy/50">Khalti sandbox payment</p>
         <p>Press `Pay with Khalti` to open Khalti&apos;s hosted payment page.</p>
         <p>In sandbox, sign in there using a test wallet number from `9800000000` to `9800000005`, then use MPIN `1111` and OTP `987654` if Khalti asks for it.</p>
-      </section>
+      </section> */}
 
       <section className="grid gap-4 lg:grid-cols-3">
         {plans.map((plan) => (

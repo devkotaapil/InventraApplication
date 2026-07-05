@@ -1,5 +1,16 @@
 import React from "react";
-import { BarChart3, Boxes, ClipboardList, CreditCard, Home, Lightbulb, PackageCheck, ReceiptText, Shield, TrendingUp } from "lucide-react";
+import {
+  BarChart3,
+  Boxes,
+  ClipboardList,
+  CreditCard,
+  Home,
+  Lightbulb,
+  PackageCheck,
+  ReceiptText,
+  Shield,
+  TrendingUp,
+} from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,9 +20,10 @@ const links = [
   ["/inventory", "Inventory", PackageCheck, false],
   ["/sales", "Sales", ReceiptText, false],
   ["/analytics", "Analytics", BarChart3, "Basic"],
+  ["/movements", "Movements", ClipboardList, "Basic"],
   ["/recommendations", "Recommendations", Lightbulb, "Pro"],
-  ["/movements", "Movements", ClipboardList, "Pro"],
-  ["/billing", "Billing", CreditCard, false]
+  ["/smart-pairing", "Smart Pairing", TrendingUp, "Pro"],
+  ["/billing", "Billing", CreditCard, false],
 ];
 
 export default function Sidebar() {
@@ -34,7 +46,11 @@ export default function Sidebar() {
               <Icon size={18} />
               {label}
             </span>
-            {level && <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase">{level}</span>}
+            {level && (
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-black uppercase">
+                {level}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
