@@ -16,6 +16,7 @@ import Movements from "./pages/Movements";
 import Pricing from "./pages/Pricing";
 import Products from "./pages/Products";
 import Recommendations from "./pages/Recommendations";
+import SmartPairing from "./pages/SmartPairing";
 import Register from "./pages/Register";
 import ResetPassword from "./pages/ResetPassword";
 import Sales from "./pages/Sales";
@@ -173,6 +174,14 @@ export default function App() {
         element={
           <PaidShopPage levels={["pro"]}>
             <Recommendations />
+          </PaidShopPage>
+        }
+      />
+      <Route
+        path="/smart-pairing"
+        element={
+          <PaidShopPage levels={["pro"]}>
+            <SmartPairing />
           </PaidShopPage>
         }
       />

@@ -5,6 +5,6 @@ import { protect, requireBillingLevel } from "../middleware/auth.js";
 
 const router = Router();
 router.use(protect);
-router.use(requireBillingLevel("pro"));
+router.use(requireBillingLevel(["basic", "pro"]));
 router.get("/", asyncHandler(movementList));
 export default router;
