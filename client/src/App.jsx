@@ -1,3 +1,4 @@
+// import React, { Suspense, lazy } from "react";
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -198,3 +199,38 @@ export default function App() {
     </Routes>
   );
 }
+
+
+// Clean up billing API call on unmount or user change to prevent memory leaks/race conditions
+// React.useEffect(() => {
+//   const controller = new AbortController();
+
+//   if (!user || user.isAdmin) {
+//     setBillingLoading(false);
+//     return;
+//   }
+
+//   setBillingLoading(true);
+//   api
+//     .get("/billing/me", { signal: controller.signal })
+//     .then((res) => setBilling(res.data.data))
+//     .catch((err) => {
+//       if (err.name !== "CanceledError") setBilling(null);
+//     })
+//     .finally(() => setBillingLoading(false));
+
+//   return () => controller.abort();
+// }, [user]);
+
+
+// Extracted repetitive loading screen UI for clean code maintenance
+// function FullPageLoader({ message = "Loading..." }) {
+//   return (
+//     <div className="grid min-h-screen place-items-center bg-cream font-bold text-navy" role="status">
+//       <span>{message}</span>
+//     </div>
+//   );
+// }
+
+
+
